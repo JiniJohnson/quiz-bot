@@ -30,11 +30,17 @@ def generate_bot_responses(message, session):
 
 def record_current_answer(answer, current_question_id, session):
     # Validate the answer
-    if answer is None or answer == "":
-        return False, "Answer cannot be empty."
-
-    # Store the answer in the Django session
-    session["answers"][current_question_id] = answer
+    try:
+        current_question = Question.objects.get(pk=current_question_id)
+        correct_answer = Answer.objects.get(question=current_question, is_correct=True)
+        selected_answer = Answer.objects.get(pk=answer, question=current_question)
+    except Question.DoesNotExist:
+        return False, "Question does not exist"
+    except Answer.DoesNotExist:
+        return False, "Invalid answer"
+    
+    # Store the answer in the session
+    session['answers'][current_question_id] = selected_answer.id
     return True, ""
 
 
